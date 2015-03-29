@@ -70,11 +70,11 @@ func oauthInit(res http.ResponseWriter, req *http.Request) {
 }
 
 func oauthRedirect(w http.ResponseWriter, r *http.Request, session sessions.Session) string {
-	code := r.URL.Query().Get("code")
-	tok, err := conf.Exchange(oauth2.NoContext, code)
-	if err != nil {
-		log.Fatal(err)
-	}
+	//code := r.URL.Query().Get("code")
+	// tok, err := conf.Exchange(oauth2.NoContext, code)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	//tok.TokenType = "Bearer"
 	// session.Set("token", tok)
