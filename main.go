@@ -7,9 +7,9 @@ import (
 	//"fmt"
 	"github.com/go-martini/martini"
 	"github.com/joho/godotenv"
-	//"github.com/martini-contrib/sessions"
+	"github.com/martini-contrib/sessions"
 	"golang.org/x/oauth2"
-	"io/ioutil"
+	//"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,8 +19,8 @@ import (
 var database = &db.Client{}
 var user = &db.User{}
 var sync *draftmark.Sync
-
 var conf *oauth2.Config
+var session sessions.CookieStore
 
 func setupDatabase() {
 	database.InitDB()
@@ -69,31 +69,36 @@ func oauthInit(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, url, 302)
 }
 
-func oauthRedirect(w http.ResponseWriter, r *http.Request) string {
+func oauthRedirect(w http.ResponseWriter, r *http.Request, session sessions.Session) string {
 	code := r.URL.Query().Get("code")
 	tok, err := conf.Exchange(oauth2.NoContext, code)
-	tok.TokenType = "Bearer"
-
 	if err != nil {
 		log.Fatal(err)
 	}
-	client := conf.Client(oauth2.NoContext, tok)
-	log.Println(tok)
-	resp, err := client.Get("https://api.dropbox.com/1/account/info?locale=en")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	log.Println(string(body))
-	log.Println(err)
 
-	return tok.AccessToken
+	//tok.TokenType = "Bearer"
+	// session.Set("token", tok)
+	// log.Println(session.Get("token"))
+	// 	client := conf.Client(oauth2.NoContext, tok)
+	// 	log.Println(tok)
+	// 	resp, err := client.Get("https://api.dropbox.com/1/account/info?locale=en")
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// 	defer resp.Body.Close()
+	// 	body, err := ioutil.ReadAll(resp.Body)
+	// 	json.Unmarshal(string(body), )
+	//
+	// 	return tok.AccessToken
+	return "ok"
 }
 
 func setupMartini() {
 	m := martini.Classic()
 	static := martini.Static("public", martini.StaticOptions{Fallback: "/index.html"})
+	session = sessions.NewCookieStore([]byte("asdfasdf"))
+	m.Use(sessions.Sessions("draftmark_session", session))
+
 	m.Get("/notes", listNotes)
 	m.Get("/sync", func() {
 		go sync.DoSync(*user, "/notes")
