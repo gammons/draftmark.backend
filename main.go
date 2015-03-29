@@ -3,15 +3,14 @@ package main
 import (
 	"draftmark"
 	db "draftmark/persistence"
-	//b64 "encoding/base64"
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"github.com/go-martini/martini"
 	"github.com/joho/godotenv"
 	//"github.com/martini-contrib/sessions"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"log"
-	//"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -73,10 +72,22 @@ func oauthInit(res http.ResponseWriter, req *http.Request) {
 func oauthRedirect(w http.ResponseWriter, r *http.Request) string {
 	code := r.URL.Query().Get("code")
 	tok, err := conf.Exchange(oauth2.NoContext, code)
+	tok.TokenType = "Bearer"
+
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(tok.AccessToken)
+	client := conf.Client(oauth2.NoContext, tok)
+	log.Println(tok)
+	resp, err := client.Get("https://api.dropbox.com/1/account/info?locale=en")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	log.Println(string(body))
+	log.Println(err)
+
 	return tok.AccessToken
 }
 
