@@ -9,6 +9,7 @@ module.exports = function(grunt) {
         src: [
           'app/components/foundation/foundation.js',
           'app/components/lodash/lodash.js',
+          'app/components/jquery/dist/jquery.js',
           'app/components/react/react.js',
          ],
          dest: 'dist/bundle.js',
