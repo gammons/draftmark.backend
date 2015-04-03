@@ -99,7 +99,7 @@ func setupMartini() {
 	session = sessions.NewCookieStore([]byte("asdfasdf"))
 	m.Use(sessions.Sessions("draftmark_session", session))
 
-	m.Get("/notes", listNotes)
+	m.Get("/notes.json", listNotes)
 	m.Get("/sync", func() {
 		go sync.DoSync(*user, "/notes")
 	})
