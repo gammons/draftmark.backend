@@ -5,15 +5,25 @@ module.exports = function(grunt) {
       options: {
         separator: ";",
       },
-      dist: {
+      vendor: {
         src: [
           'app/components/foundation/foundation.js',
           'app/components/lodash/lodash.js',
           'app/components/jquery/dist/jquery.js',
           'app/components/react/react.js',
+
          ],
-         dest: 'dist/bundle.js',
+         dest: 'dist/vendor.js',
       },
+      app: {
+        src: [
+          'tmp/index.js',
+          'tmp/note.js',
+          'tmp/note_card.js',
+          'tmp/app.js'
+        ],
+        dest: 'dist/app.js'
+      }
     },
     sass: {
       options: {
@@ -39,8 +49,10 @@ module.exports = function(grunt) {
         },
         dist: {
             files: {
-                'dist/index.js': 'src/index.js.jsx',
-                'dist/app.js': 'src/app.js.jsx'
+                'tmp/index.js': 'src/index.js.jsx',
+                'tmp/app.js': 'src/app.js.jsx',
+                'tmp/note.js': 'src/note.js.jsx',
+                'tmp/note_card.js': 'src/note_card.js.jsx'
             }
         }
     }
@@ -49,6 +61,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-sass");
   grunt.loadNpmTasks("grunt-babel");
 
-  grunt.registerTask('build', ['concat', 'babel']);
+  grunt.registerTask('build', ['babel', 'concat']);
 }
 
