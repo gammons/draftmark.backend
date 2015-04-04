@@ -28,21 +28,23 @@ module.exports = function(grunt) {
       }
     },
     sass: {
-      options: {
-        loadPath: ['app/components/foundation/scss']
-      },
       dist: {
         options: {
-          sourcemap: 'none',
+          loadPath: ['app/components/foundation/scss'],
           style: 'nested'
         },
         files: [{
           expand: true,
-          cwd: 'src/scss',
-          src: ['*.scss'],
-          dest: 'dist/assets/css',
-          ext: '.css'
-        }],
+          src: [ 'app/components/foundation/scss/normalize.scss', 'app/components/foundation/scss/foundation.scss'],
+          dest: 'dist/css/foundation.css'
+        }]
+        // files: [{
+        //   expand: true,
+        //   cwd: 'src/scss',
+        //   src: ['*.scss'],
+        //   dest: 'dist/css',
+        //   ext: '.css'
+        // }],
       }
     },
     'babel': {
