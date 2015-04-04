@@ -54,8 +54,9 @@ func resetDB() {
 
 }
 
-func listNotes() ([]byte, error) {
+func listNotes(w http.ResponseWriter) ([]byte, error) {
 	notes := database.ListNotes(user)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	return json.Marshal(notes)
 }
 
@@ -103,7 +104,7 @@ func setupMartini() {
 	m.Get("/sync", func() {
 		go sync.DoSync(*user, "/notes")
 	})
-	m.Get("/note/:id", getNote)
+	m.Get("/notes/:id/content.json", getNote)
 	m.Get("/authorize", oauthInit)
 	m.Get("/redirect", oauthRedirect)
 	m.NotFound(static, http.NotFound)
