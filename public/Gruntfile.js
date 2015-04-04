@@ -10,6 +10,8 @@ module.exports = function(grunt) {
           'app/components/foundation/foundation.js',
           'app/components/lodash/lodash.js',
           'app/components/jquery/dist/jquery.js',
+          'app/components/director/build/director.min.js',
+          'app/components/marked/marked.min.js',
           'app/components/react/react.js',
 
          ],
