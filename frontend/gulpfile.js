@@ -12,6 +12,7 @@ var $ = require('gulp-load-plugins')();
 var browserify = require('browserify');
 var watchify = require('watchify');
 var concat = require('gulp-concat');
+var babel = require('gulp-babel');
 var source = require('vinyl-source-stream'),
     sourceFile = './app/scripts/app.js',
     destFolder = './dist/scripts',
@@ -43,46 +44,22 @@ gulp.task('styles', function () {
         .pipe($.size());
 });
 
-// Scripts
+
 gulp.task('scripts', function () {
-    var bundler = watchify(browserify({
-        entries: ['app/scripts/components/*.js', 'app/scripts/app.js'],
-        insertGlobals: true,
-        cache: {},
-        packageCache: {},
-        fullPaths: true
-    }));
-
-    bundler.on('update', rebundle);
-
-    function rebundle() {
-        return bundler.bundle()
-            // log errors if they happen
-            .on('error', $.util.log.bind($.util, 'Browserify Error'))
-            .pipe(source(destFileName))
-            .pipe(gulp.dest(destFolder));
-    }
-
-    return rebundle();
-
+    return gulp.src(['app/scripts/components/*.js', 'app/scripts/app.js'])
+        //.pipe(sourcemaps.init())
+        .pipe(babel())
+        //.pipe($.uglify())
+        .pipe(concat('app.js'))
+        //.pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest('dist/scripts'));
 });
-
 gulp.task('vendorScripts', function() {
   return gulp.src(libs)
     .pipe(concat('vendor.js'))
     .pipe($.uglify())
     .pipe(gulp.dest('./dist/scripts'));
 });
-
-gulp.task('buildScripts', function() {
-    return browserify(sourceFile)
-            .bundle()
-            .pipe(source(destFileName))
-            .pipe(gulp.dest('dist/scripts'));
-});
-
-
-
 
 gulp.task('jade', function () {
     return gulp.src('app/template/*.jade')
@@ -127,7 +104,7 @@ gulp.task('bundle', ['styles', 'scripts', 'bower'], function(){
                .pipe(gulp.dest('dist'));
 });
 
-gulp.task('buildBundle', ['styles', 'buildScripts', 'vendorScripts', 'bower'], function(){
+gulp.task('buildBundle', ['styles', 'scripts', 'vendorScripts', 'bower'], function(){
     return gulp.src('./app/*.html')
                .pipe($.useref.assets())
                .pipe($.useref.restore())
