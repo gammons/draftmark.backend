@@ -1,2 +1,49 @@
-@import "./components/foundation/scss/foundation"
+@import "./components/foundation/scss/foundation";
 
+pre {
+  background-color: #002b36 !important;
+  padding: 10px !important;
+}
+
+code {
+  border-style: none !important;
+  background-color: rgba(0,0,0,0) !important;
+  padding: 0 !important;
+  color: #839496 !important;
+
+}
+
+.note {
+  border: 1px solid #ccc;
+  height: 150px;
+}
+
+.note h5 {
+  margin-top: 0;
+  margin-bottom: 0;
+  background-color: #666;
+  color: #eaeaea;
+  padding: 5px;
+
+}
+
+.view-note {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.docs { 
+  .columns {
+    height: 150px;
+
+    p.preview {
+      color: #ccc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.8em;
+      
+    }
+
+  }
+}
