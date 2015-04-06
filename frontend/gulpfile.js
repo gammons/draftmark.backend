@@ -11,15 +11,25 @@ var path = require('path');
 var $ = require('gulp-load-plugins')();
 var browserify = require('browserify');
 var watchify = require('watchify');
+var concat = require('gulp-concat');
 var source = require('vinyl-source-stream'),
-    
     sourceFile = './app/scripts/app.js',
-    
     destFolder = './dist/scripts',
     destFileName = 'app.js';
 
 var browserSync = require('browser-sync');
 var reload = browserSync.reload;
+
+var libs = [
+      './app/bower_components/modernizr/modernizr.js',
+      './app/bower_components/jquery/dist/jquery.js',
+      './app/bower_components/components/director/build/director.js',
+      './app/bower_components/components/foundation/js/foundation.js',
+      './app/bower_components/components/foundation/js/foundation.js',
+      './app/bower_components/components/lodash/lodash.js',
+      './app/bower_components/components/marked/marked.min.js',
+      './app/bower_components/components/react/react.min.js'
+]
 
 // Styles
 gulp.task('styles', function () {
@@ -36,7 +46,7 @@ gulp.task('styles', function () {
 // Scripts
 gulp.task('scripts', function () {
     var bundler = watchify(browserify({
-        entries: [sourceFile],
+        entries: ['app/scripts/components/*.js', 'app/scripts/app.js'],
         insertGlobals: true,
         cache: {},
         packageCache: {},
@@ -55,6 +65,13 @@ gulp.task('scripts', function () {
 
     return rebundle();
 
+});
+
+gulp.task('vendorScripts', function() {
+  return gulp.src(libs)
+    .pipe(concat('vendor.js'))
+    .pipe($.uglify())
+    .pipe(gulp.dest('./dist/scripts'));
 });
 
 gulp.task('buildScripts', function() {
@@ -110,7 +127,7 @@ gulp.task('bundle', ['styles', 'scripts', 'bower'], function(){
                .pipe(gulp.dest('dist'));
 });
 
-gulp.task('buildBundle', ['styles', 'buildScripts', 'bower'], function(){
+gulp.task('buildBundle', ['styles', 'buildScripts', 'vendorScripts', 'bower'], function(){
     return gulp.src('./app/*.html')
                .pipe($.useref.assets())
                .pipe($.useref.restore())
@@ -172,8 +189,8 @@ gulp.task('watch', ['html', 'bundle'], function () {
 // Build
 gulp.task('build', ['html', 'buildBundle', 'images', 'extras'], function() {
     gulp.src('dist/scripts/app.js')
-        .pipe($.uglify())
-        .pipe($.stripDebug())
+        //.pipe($.uglify())
+        //.pipe($.stripDebug())
         .pipe(gulp.dest('dist/scripts'));
 });
 
