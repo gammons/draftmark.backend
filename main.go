@@ -71,11 +71,14 @@ func oauthInit(res http.ResponseWriter, req *http.Request) {
 }
 
 func oauthRedirect(w http.ResponseWriter, r *http.Request, session sessions.Session) string {
-	//code := r.URL.Query().Get("code")
-	// tok, err := conf.Exchange(oauth2.NoContext, code)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	code := r.URL.Query().Get("code")
+	tok, err := conf.Exchange(oauth2.NoContext, code)
+	if err != nil {
+		log.Fatal(err)
+	}
+	user.DropboxAccessToken = tok.AccessToken
+	sync.Db.UpdateUserAccessToken(user, tok.AccessToken)
+	return "ok"
 
 	//tok.TokenType = "Bearer"
 	// session.Set("token", tok)
@@ -91,7 +94,6 @@ func oauthRedirect(w http.ResponseWriter, r *http.Request, session sessions.Sess
 	// 	json.Unmarshal(string(body), )
 	//
 	// 	return tok.AccessToken
-	return "ok"
 }
 
 func setupMartini() {
