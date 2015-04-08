@@ -3,24 +3,21 @@ package main
 import (
 	"draftmark"
 	db "draftmark/persistence"
-	"encoding/json"
-	//"fmt"
-	"github.com/go-martini/martini"
+	"github.com/codegangsta/negroni"
+	"github.com/unrolled/render"
+	//"github.com/goincremental/negroni-sessions"
+	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/martini-contrib/sessions"
-	"golang.org/x/oauth2"
-	//"io/ioutil"
+	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 )
 
 var database = &db.Client{}
 var user = &db.User{}
 var sync *draftmark.Sync
-var conf *oauth2.Config
-var session sessions.CookieStore
+var rndr = render.New()
 
 func setupDatabase() {
 	database.InitDB()
@@ -28,18 +25,6 @@ func setupDatabase() {
 	//resetDB()
 
 	database.Db.Where("email = ?", "gammons@gmail.com").First(&user)
-}
-
-func setupOauth() {
-	conf = &oauth2.Config{
-		ClientID:     os.Getenv("DROPBOX_KEY"),
-		ClientSecret: os.Getenv("DROPBOX_SECRET"),
-		RedirectURL:  "http://localhost:3000/redirect",
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://www.dropbox.com/1/oauth2/authorize",
-			TokenURL: "https://api.dropbox.com/1/oauth2/token",
-		},
-	}
 }
 
 func resetDB() {
@@ -54,63 +39,42 @@ func resetDB() {
 
 }
 
-func listNotes(w http.ResponseWriter) ([]byte, error) {
+func listNotes(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	notes := database.ListNotes(user)
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	return json.Marshal(notes)
+	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	rndr.JSON(res, http.StatusOK, notes)
 }
 
-func getNote(params martini.Params) string {
-	noteId, _ := strconv.Atoi(params["id"])
-	return database.GetNoteContents(noteId)
+func getNote(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	noteId, _ := strconv.Atoi(ps.ByName("id"))
+	fmt.Fprintf(res, database.GetNoteContents(noteId))
 }
 
-func oauthInit(res http.ResponseWriter, req *http.Request) {
-	url := conf.AuthCodeURL("state")
-	http.Redirect(res, req, url, 302)
+func doSync(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	go sync.DoSync(*user, "/notes")
 }
 
-func oauthRedirect(w http.ResponseWriter, r *http.Request, session sessions.Session) string {
-	code := r.URL.Query().Get("code")
-	tok, err := conf.Exchange(oauth2.NoContext, code)
-	if err != nil {
-		log.Fatal(err)
-	}
-	user.DropboxAccessToken = tok.AccessToken
-	sync.Db.UpdateUserAccessToken(user, tok.AccessToken)
-	return "ok"
+func setupNegroni() {
+	n := negroni.Classic()
+	router := httprouter.New()
+	router.GET("/notes.json", listNotes)
+	router.GET("/notes/:id/content.json", getNote)
 
-	//tok.TokenType = "Bearer"
-	// session.Set("token", tok)
-	// log.Println(session.Get("token"))
-	// 	client := conf.Client(oauth2.NoContext, tok)
-	// 	log.Println(tok)
-	// 	resp, err := client.Get("https://api.dropbox.com/1/account/info?locale=en")
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// 	defer resp.Body.Close()
-	// 	body, err := ioutil.ReadAll(resp.Body)
-	// 	json.Unmarshal(string(body), )
-	//
-	// 	return tok.AccessToken
-}
+	router.GET("/authorize", oauthInit)
+	router.GET("/redirect", oauthRedirect)
+	router.GET("/sync", doSync)
 
-func setupMartini() {
-	m := martini.Classic()
-	static := martini.Static("public", martini.StaticOptions{Fallback: "/index.html"})
-	session = sessions.NewCookieStore([]byte("asdfasdf"))
-	m.Use(sessions.Sessions("draftmark_session", session))
+	n.UseHandler(router)
+	n.Run(":3000")
 
-	m.Get("/notes.json", listNotes)
-	m.Get("/sync", func() {
-		go sync.DoSync(*user, "/notes")
-	})
-	m.Get("/notes/:id/content.json", getNote)
-	m.Get("/authorize", oauthInit)
-	m.Get("/redirect", oauthRedirect)
-	m.NotFound(static, http.NotFound)
-	m.Run()
+	// n.Get("/notes.json", listNotes)
+	// n.Get("/sync", func() {
+	// 	go sync.DoSync(*user, "/notes")
+	// })
+	// n.Get("/notes/:id/content.json", getNote)
+	// n.Get("/authorize", oauthInit)
+	// n.Get("/redirect", oauthRedirect)
+	// n.NotFound(static, http.NotFound)
 }
 
 func main() {
@@ -120,8 +84,7 @@ func main() {
 	}
 	setupDatabase()
 	setupOauth()
-	log.Println("creating new sync with ", user.DropboxAccessToken)
-	sync = draftmark.NewSync(user.DropboxAccessToken)
+	sync = draftmark.NewSync()
 	sync.DoLogging = true
-	setupMartini()
+	setupNegroni()
 }
