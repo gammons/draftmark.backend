@@ -52,8 +52,9 @@ func getUserInfo(tok *oauth2.Token) *dropboxUser {
 	client := conf.Client(oauth2.NoContext, tok)
 	resp, _ := client.Get("https://api.dropbox.com/1/account/info")
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, _ := ioutil.ReadAll(resp.Body)
 	var dropboxUser dropboxUser
 	json.Unmarshal(body, &dropboxUser)
+	dropboxUser.DropboxAccessToken = tok.AccessToken
 	return &dropboxUser
 }

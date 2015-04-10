@@ -47,12 +47,12 @@ func listNotes(res http.ResponseWriter, req *http.Request, _ httprouter.Params) 
 }
 
 func getNote(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	noteId, _ := strconv.Atoi(ps.ByName("id"))
-	fmt.Fprintf(res, database.GetNoteContents(noteId))
+	path := ps.ByName("filepath")
+	fmt.Fprintf(res, database.GetNoteContents(currentUser(req), path))
 }
 
 func doSync(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	go sync.DoSync(*user, "/notes")
+	go sync.DoSync(*currentUser(req), "/notes")
 }
 
 func AuthRequired(h httprouter.Handle) httprouter.Handle {
@@ -68,7 +68,6 @@ func AuthRequired(h httprouter.Handle) httprouter.Handle {
 func currentUser(r *http.Request) *db.User {
 	session, _ := store.Get(r, "draftmark")
 	var user = &db.User{}
-	fmt.Println("session value for userId is ", session.Values["userId"])
 	database.Db.Where("id = ?", session.Values["userId"]).First(&user)
 	return user
 
@@ -78,6 +77,8 @@ func setCurrentUser(w http.ResponseWriter, r *http.Request, dUser *dropboxUser) 
 	session, _ := store.Get(r, "draftmark")
 	var user = db.User{}
 	database.Db.Where("email = ?", dUser.Email).FirstOrInit(&user)
+	user.Email = dUser.Email
+	user.DropboxUserId = strconv.Itoa(dUser.DropboxId)
 	user.DropboxAccessToken = dUser.DropboxAccessToken
 	database.Db.Save(&user)
 	session.Values["userId"] = user.ID
@@ -88,7 +89,7 @@ func setupNegroni() {
 	n := negroni.Classic()
 	router := httprouter.New()
 	router.GET("/notes.json", AuthRequired(listNotes))
-	router.GET("/notes/:id/content.json", AuthRequired(getNote))
+	router.GET("/content/*filepath", AuthRequired(getNote))
 	router.GET("/sync", AuthRequired(doSync))
 
 	router.GET("/authorize", oauthInit)
