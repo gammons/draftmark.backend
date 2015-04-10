@@ -1,14 +1,24 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 )
 
 var conf *oauth2.Config
+
+type dropboxUser struct {
+	DisplayName        string `json:"display_name"`
+	DropboxId          int    `json:"uid"`
+	Email              string `json:"email"`
+	DropboxAccessToken string
+}
 
 func setupOauth() {
 	conf = &oauth2.Config{
@@ -28,11 +38,28 @@ func oauthInit(res http.ResponseWriter, req *http.Request, _ httprouter.Params) 
 }
 
 func oauthRedirect(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	code := ps.ByName("code")
+	code := req.URL.Query().Get("code")
+	fmt.Println("code = ", code)
 	tok, err := conf.Exchange(oauth2.NoContext, code)
+	fmt.Println("tok = ", tok)
 	if err != nil {
 		log.Fatal(err)
 	}
-	user.DropboxAccessToken = tok.AccessToken
-	sync.Db.UpdateUserAccessToken(user, tok.AccessToken)
+	dUser := getUserInfo(tok)
+	setCurrentUser(res, req, dUser)
+	http.Redirect(res, req, "/", 301)
+}
+
+func getUserInfo(tok *oauth2.Token) *dropboxUser {
+	tok.TokenType = "Bearer"
+	client := conf.Client(oauth2.NoContext, tok)
+	resp, _ := client.Get("https://api.dropbox.com/1/account/info")
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	fmt.Println("err = ", err)
+	fmt.Println("body = ", string(body))
+	var dropboxUser dropboxUser
+	json.Unmarshal(body, &dropboxUser)
+	return &dropboxUser
 }
