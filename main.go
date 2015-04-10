@@ -41,8 +41,7 @@ func setupDatabase() {
 // }
 //
 func listNotes(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
-	fmt.Println("IN LISTNOTES")
-	notes := database.ListNotes(user)
+	notes := database.ListNotes(currentUser(req))
 	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	rndr.JSON(res, http.StatusOK, notes)
 }
@@ -58,11 +57,10 @@ func doSync(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 
 func AuthRequired(h httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		user := currentUser(r)
-		fmt.Println("user = ", user)
-		if user.ID == 0 {
+		if currentUser(r).ID == 0 {
 			http.Redirect(w, r, "/notloggedin", 301)
 		} else {
+			h(w, r, ps)
 		}
 	}
 }
@@ -81,7 +79,6 @@ func setCurrentUser(w http.ResponseWriter, r *http.Request, dUser *dropboxUser) 
 	var user = db.User{}
 	database.Db.Where("email = ?", dUser.Email).FirstOrInit(&user)
 	user.DropboxAccessToken = dUser.DropboxAccessToken
-	//user.DropboxUserId = string(dUser.DropboxId)
 	database.Db.Save(&user)
 	session.Values["userId"] = user.ID
 	session.Save(r, w)
@@ -99,15 +96,6 @@ func setupNegroni() {
 
 	n.UseHandler(router)
 	n.Run(":3000")
-
-	// n.Get("/notes.json", listNotes)
-	// n.Get("/sync", func() {
-	// 	go sync.DoSync(*user, "/notes")
-	// })
-	// n.Get("/notes/:id/content.json", getNote)
-	// n.Get("/authorize", oauthInit)
-	// n.Get("/redirect", oauthRedirect)
-	// n.NotFound(static, http.NotFound)
 }
 
 func main() {

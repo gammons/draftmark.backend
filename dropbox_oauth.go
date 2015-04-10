@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/julienschmidt/httprouter"
 	"golang.org/x/oauth2"
 	"io/ioutil"
@@ -39,9 +38,7 @@ func oauthInit(res http.ResponseWriter, req *http.Request, _ httprouter.Params) 
 
 func oauthRedirect(res http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	code := req.URL.Query().Get("code")
-	fmt.Println("code = ", code)
 	tok, err := conf.Exchange(oauth2.NoContext, code)
-	fmt.Println("tok = ", tok)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -55,10 +52,7 @@ func getUserInfo(tok *oauth2.Token) *dropboxUser {
 	client := conf.Client(oauth2.NoContext, tok)
 	resp, _ := client.Get("https://api.dropbox.com/1/account/info")
 	defer resp.Body.Close()
-
 	body, err := ioutil.ReadAll(resp.Body)
-	fmt.Println("err = ", err)
-	fmt.Println("body = ", string(body))
 	var dropboxUser dropboxUser
 	json.Unmarshal(body, &dropboxUser)
 	return &dropboxUser
