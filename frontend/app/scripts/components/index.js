@@ -33,20 +33,19 @@ var IndexView = React.createClass({
   },
 
   setupRouter: function() {
-    var routes = {
-      '/': this.indexView,
-      '/notes/:id': this.viewNoteView
-    }
-    var router = Router(routes);
-    router.init();
+    var router = new Router().init();
+    router.on(/notes\/?((\w|.)*)/, this.viewNoteView)
+    router.on(/asdf/, function() { console.log("got asdf"); });
+    router.on("/", this.indexView)
 
     this.setState({notes: this.state.notes, router: router});
   },
   indexView: function() {
     this.setState({view: "index"});
   },
-  viewNoteView: function(id) {
-    this.setState({view: "note", selectedNoteId: id});
+  viewNoteView: function(path) {
+    console.log("view note view", path)
+    this.setState({view: "note", selectedNotePath: path});
   },
 
   render: function() {
@@ -62,7 +61,7 @@ var IndexView = React.createClass({
     var notes = _.map(this.state.notes, function(note) {
       return(
         <li key={note.id}>
-          <NoteCardView className="noteCardView" id={note.id} title={note.title} content={note.content} clickNote={showNote} />
+          <NoteCardView className="noteCardView" path={note.path} title={note.title} content={note.content} clickNote={showNote} />
         </li>
       );
     });
@@ -78,15 +77,16 @@ var IndexView = React.createClass({
   },
 
   renderNote: function() {
-    var selectedNote = this.getNote(this.state.selectedNoteId);
+    var selectedNote = this.getNote(this.state.selectedNotePath);
     return (
       <div className="view-note">
-      <NoteView id={selectedNote.id} title={selectedNote.title} pusher={this.state.pusher} />
+      <NoteView path={selectedNote.path} title={selectedNote.title} pusher={this.state.pusher} />
       </div>
     );
   },
-  getNote: function(id) {
-    return _.find(this.state.notes, function(note) { return note.id == id });
+  getNote: function(path) {
+    path = "/"+path;
+    return _.find(this.state.notes, function(note) { return note.path == path });
   }
 
 });

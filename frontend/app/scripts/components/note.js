@@ -16,7 +16,7 @@ var NoteView = React.createClass({
   },
   getData: function(successFn) {
     $.ajax({
-      url: "/notes/"+this.props.id+"/content.json",
+      url: "/content"+this.props.path,
       success: successFn,
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());

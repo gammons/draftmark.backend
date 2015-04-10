@@ -1,6 +1,6 @@
 var NoteCardView = React.createClass({
   render: function() {
-    var href = "#/notes/" + this.props.id;
+    var href = "#/notes"+this.props.path;
     return(
       <div className="note">
         <a href={href}>
