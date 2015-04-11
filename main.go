@@ -25,23 +25,17 @@ var store = sessions.NewCookieStore([]byte("dingleton"))
 func setupDatabase() {
 	database.InitDB()
 	database.Db.LogMode(true)
-	//resetDB()
-
-	//database.Db.Where("email = ?", "gammons@gmail.com").First(&user)
 }
 
-// func resetDB() {
-// 	database.Db.DropTable(&db.User{})
-// 	database.Db.DropTable(&db.Note{})
-// 	database.Db.CreateTable(&db.User{})
-// 	database.Db.CreateTable(&db.Note{})
-// 	database.Db.AutoMigrate(&db.User{}, &db.Note{})
-// 	database.Db.Model(&db.Note{}).AddIndex("idx_user_notes", "user_id")
-// 	user := &db.User{Email: "gammons@gmail.com", DropboxAccessToken: "RzfZv3hAoIYAAAAAAAAJ2ue-DKJPep3jvHF3XNGvvjJk-gDHkgUvOUyOcxH4XG_V", DropboxCursor: ""}
-// 	database.Db.Create(&user)
-//
-// }
-//
+func resetDB(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
+	database.Db.DropTable(&db.User{})
+	database.Db.DropTable(&db.Note{})
+	database.Db.CreateTable(&db.User{})
+	database.Db.CreateTable(&db.Note{})
+	database.Db.AutoMigrate(&db.User{}, &db.Note{})
+	database.Db.Model(&db.Note{}).AddIndex("idx_user_notes", "user_id")
+}
+
 func listNotes(res http.ResponseWriter, req *http.Request, _ httprouter.Params) {
 	notes := database.ListNotes(currentUser(req))
 	res.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -114,6 +108,7 @@ func setupNegroni() {
 	router.GET("/redirect", oauthRedirect)
 	router.GET("/sync", doSync)
 	router.POST("/sync", doSync)
+	router.GET("/reset__", resetDB)
 
 	n.UseHandler(router)
 	n.Run(":3000")
