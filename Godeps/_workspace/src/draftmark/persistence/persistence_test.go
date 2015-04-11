@@ -13,7 +13,7 @@ var db = &database.Client{}
 var _ = BeforeSuite(func() {
 	err := godotenv.Load("../test.env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file")
 	}
 
 	db.InitDB()

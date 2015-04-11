@@ -44,7 +44,7 @@ type Client struct {
 }
 
 func (c *Client) InitDB() {
-	c.Db, _ = gorm.Open("postgres", "dbname="+os.Getenv("DB_TABLENAME")+" sslmode=disable")
+	c.Db, _ = gorm.Open("postgres", os.Getenv("DATABASE_URL"))
 	c.Db.LogMode(true)
 }
 

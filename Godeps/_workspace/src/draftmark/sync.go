@@ -77,6 +77,6 @@ func getTitle(content string) string {
 func setupDotEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Println("Error loading .env file.  Maybe that is ok though.")
 	}
 }
