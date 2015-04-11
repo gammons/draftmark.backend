@@ -115,7 +115,10 @@ func setupNegroni() {
 }
 
 func main() {
-	_ = godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("Cannot load .env file.  Maybe this is ok though.")
+	}
 	setupDatabase()
 	setupOauth()
 	sync = draftmark.NewSync()
