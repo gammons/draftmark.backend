@@ -117,7 +117,7 @@ func setupNegroni() {
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Info("Error loading .env file.  This might be ok though if we're in prod.")
 	}
 	setupDatabase()
 	setupOauth()
