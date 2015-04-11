@@ -23,7 +23,7 @@ func setupOauth() {
 	conf = &oauth2.Config{
 		ClientID:     os.Getenv("DROPBOX_KEY"),
 		ClientSecret: os.Getenv("DROPBOX_SECRET"),
-		RedirectURL:  os.Getenv("DROPBOX_REDIRECT_URL"), "http://localhost:3000/redirect",
+		RedirectURL:  os.Getenv("DROPBOX_REDIRECT_URL"),
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://www.dropbox.com/1/oauth2/authorize",
 			TokenURL: "https://api.dropbox.com/1/oauth2/token",
