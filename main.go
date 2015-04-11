@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -111,7 +112,7 @@ func setupNegroni() {
 	router.GET("/reset__", resetDB)
 
 	n.UseHandler(router)
-	n.Run(":3000")
+	n.Run(":" + os.Getenv("PORT"))
 }
 
 func main() {
