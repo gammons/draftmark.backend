@@ -73,7 +73,7 @@ func (c *Client) GetNoteContents(user *User, path string) string {
 }
 
 func (c *Client) DeleteNote(note *Note) bool {
-	c.Db.Delete(note)
+	c.Db.Delete(&note)
 	return true
 }
 

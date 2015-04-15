@@ -4,7 +4,7 @@
 	"Deps": [
 		{
 			"ImportPath": "draftmark",
-			"Rev": "93f81808a92678e23e6fb3bef1f00f5da873712b"
+			"Rev": "52cd8c1406442d1a248f0180f9cf702b1a3b4ec0"
 		},
 		{
 			"ImportPath": "github.com/codegangsta/negroni",
