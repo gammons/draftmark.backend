@@ -60,7 +60,7 @@ func (s *Sync) DoSync(user db.User, prefix string) {
 
 func (s *Sync) deleteEntry(user *db.User, entry *dropbox.DropboxEntry) {
 	note := db.Note{UserId: user.ID, Path: entry.Path, Mtime: entry.Modified}
-	s.Db.DeleteNote(&note)
+	s.Db.DeleteNote(user, &note)
 }
 
 func (s *Sync) createOrUpdateEntry(user *db.User, entry *dropbox.DropboxEntry) {

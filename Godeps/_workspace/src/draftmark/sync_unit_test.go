@@ -32,7 +32,7 @@ type FakeDb struct {
 	listNotes       []db.Note
 }
 
-func (d *FakeDb) DeleteNote(note *db.Note) bool {
+func (d *FakeDb) DeleteNote(user *db.User, note *db.Note) bool {
 	d.deleteNoteCount++
 	return true
 }
